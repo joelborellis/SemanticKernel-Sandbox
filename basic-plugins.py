@@ -3,6 +3,9 @@
 import asyncio
 from typing import Annotated
 
+from tools.searchshadow import SearchShadow
+from tools.searchcustomer import SearchCustomer
+
 from semantic_kernel.agents import ChatCompletionAgent
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai.services.open_ai_chat_completion import OpenAIChatCompletion
@@ -10,6 +13,7 @@ from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
+from jinja2 import Environment, FileSystemLoader
 
 ###################################################################
 # The following sample demonstrates how to create a simple,       #
@@ -17,48 +21,57 @@ from semantic_kernel.kernel import Kernel
 # the Kernel.                                                     #
 ###################################################################
 
+search_client = SearchShadow()
+search_customer_client = SearchCustomer()
+
+# Load Jinja2 environment
+PROMPT_DIR = "prompts"  # Directory where your XML templates are stored
+env = Environment(loader=FileSystemLoader(PROMPT_DIR), autoescape=True)
+
 # This sample allows for a streaming response verus a non-streaming response
 streaming = True
 
 # Define the agent name and instructions
-HOST_NAME = "Host"
-HOST_INSTRUCTIONS = "Answer questions about the menu."
+AGENT_NAME = "Shadow"
+# Render select_file_prompt template
+create_content_prompt = env.get_template("shadow_prompt.xml")
+AGENT_INSTRUCTIONS = create_content_prompt.render()
 
 
-# Define a sample plugin for the sample
-class MenuPlugin:
-    """A sample Menu Plugin used for the concept sample."""
+# Define the ShadowPlugin
+class ShadowPlugin:
+    """A sample Shadow Plugin used for the concept sample."""
 
-    @kernel_function(description="Provides a list of specials from the menu.")
-    def get_specials(self) -> Annotated[str, "Returns the specials from the menu."]:
-        return """
-        Special Soup: Clam Chowder
-        Special Salad: Cobb Salad
-        Special Drink: Chai Tea
-        """
-
-    @kernel_function(description="Provides the price of the requested menu item.")
-    def get_item_price(
-        self, menu_item: Annotated[str, "The name of the menu item."]
-    ) -> Annotated[str, "Returns the price of the menu item."]:
-        return "$9.99"
-
+    @kernel_function(name="get_sales_docs", description="Given a user query search the shadow sales strategy index.")
+    def get_sales_docs(self, query: Annotated[str, "The query from the user."]
+    ) -> Annotated[str, "Returns documents from the shadow sales strategy index."]:
+        print(f"user_query:  {query}")
+        docs = search_client.search_hybrid(query)
+        return docs
+    
+    @kernel_function(name="get_customer_docs", description="Given a user query determine if a company name was mentioned.  Use the company name and the query information to search the shadow customer index.")
+    def get_customer_docs(self, query: Annotated[str, "The query and the customer name from the user."]
+    ) -> Annotated[str, "Returns documents from the shadow customer index."]:
+        print(f"user_customer_query:  {query}")
+        docs = search_customer_client.search_hybrid(query)
+        return docs
 
 # A helper method to invoke the agent with the user input
-async def invoke_agent(agent: ChatCompletionAgent, input: str, chat: ChatHistory) -> None:
+async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory) -> None:
     """Invoke the agent with the user input."""
-    chat.add_user_message(input)
+    chat.add_user_message(query)
 
-    print(f"# {AuthorRole.USER}: '{input}'")
+    print(f"# {AuthorRole.USER}: '{query}'")
 
     if streaming:
+        print(f"streaming!")
         contents = []
-        content_name = ""
+        agent_name = ""
         async for content in agent.invoke_stream(chat):
-            content_name = content.name
+            agent_name = content.name
             contents.append(content)
         message_content = "".join([content.content for content in contents])
-        print(f"# {content.role} - {content_name or '*'}: '{message_content}'")
+        print(f"# {content.role} - {agent_name or '*'}: '{message_content}'")
         chat.add_assistant_message(message_content)
     else:
         async for content in agent.invoke(chat):
@@ -70,29 +83,32 @@ async def main():
     # Create the instance of the Kernel
     kernel = Kernel()
 
-    service_id = "agent"
+    service_id = "shadow_agent"
     kernel.add_service(OpenAIChatCompletion(ai_model_id="gpt-4o", service_id=service_id))
 
     settings = kernel.get_prompt_execution_settings_from_service_id(service_id=service_id)
     # Configure the function choice behavior to auto invoke kernel functions
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
-    kernel.add_plugin(MenuPlugin(), plugin_name="menu")
+    kernel.add_plugin(ShadowPlugin(), plugin_name="shadow")
 
     # Create the agent
     agent = ChatCompletionAgent(
-        service_id="agent", kernel=kernel, name=HOST_NAME, instructions=HOST_INSTRUCTIONS, execution_settings=settings
+        service_id="shadow_agent", kernel=kernel, name=AGENT_NAME, instructions=AGENT_INSTRUCTIONS, execution_settings=settings
     )
 
     # Define the chat history
     chat = ChatHistory()
+    
+    while True:
+        # Get user query
+        query = input(f"\nAsk GPT: ")
+        if query.lower() == "exit":
+            exit(0)
 
-    # Respond to user input
-    await invoke_agent(agent, "Hello", chat)
-    await invoke_agent(agent, "What is the special soup and how much does it cost?", chat)
-    await invoke_agent(agent, "What is the special drink?", chat)
-    await invoke_agent(agent, "Thank you", chat)
-
+        # Respond invoke the Shadow agent with the Plugins
+        #print(chat)
+        await invoke_agent(agent, query, chat)
 
 if __name__ == "__main__":
     asyncio.run(main())

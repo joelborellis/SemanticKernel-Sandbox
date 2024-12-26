@@ -1,2 +1,3 @@
 semantic-kernel[all]
 python-dotenv
+azure-search-documents==11.6.0b4
