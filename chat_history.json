@@ -1,0 +1,35 @@
+{
+  "messages": [
+    {
+      "metadata": {},
+      "content_type": "message",
+      "role": "user",
+      "items": []
+    },
+    {
+      "metadata": {},
+      "content_type": "message",
+      "role": "assistant",
+      "name": "Shadow",
+      "items": [
+        {
+          "metadata": {},
+          "content_type": "text",
+          "text": "Hello! Do you have any sales-related questions or need assistance with your sales strategy today? "
+        }
+      ]
+    },
+    {
+      "metadata": {},
+      "content_type": "message",
+      "role": "assistant",
+      "items": [
+        {
+          "metadata": {},
+          "content_type": "text",
+          "text": "Hello! Do you have any sales-related questions or need assistance with your sales strategy today? "
+        }
+      ]
+    }
+  ]
+}

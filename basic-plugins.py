@@ -29,7 +29,7 @@ PROMPT_DIR = "prompts"  # Directory where your XML templates are stored
 env = Environment(loader=FileSystemLoader(PROMPT_DIR), autoescape=True)
 
 # This sample allows for a streaming response verus a non-streaming response
-streaming = False
+streaming = True
 
 # Define the agent name and instructions
 AGENT_NAME = "Shadow"
@@ -78,7 +78,7 @@ async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory
     print(f"# {AuthorRole.USER}: '{query}'")
 
     if streaming:
-        print(f"streaming!")
+        #print(f"streaming!")
         contents = []
         agent_name = ""
         async for content in agent.invoke_stream(chat):
@@ -86,11 +86,12 @@ async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory
             contents.append(content)
         message_content = "".join([content.content for content in contents])
         # Simulate typing by adding characters one by one
-        #for char in message_content:
-        #    accumulated_text += char
-        #    print(accumulated_text)
-        #    time.sleep(0.02)  # Adjust typing speed as desired
-        print(f"# {content.role} - {agent_name or '*'}: '{message_content}'")      
+        if message_content:
+            for char in message_content:
+                print(char, end="", flush=True)
+                # Adjust sleep time to control the "typing" speed
+                await asyncio.sleep(0.01)
+        #print(f"# {content.role} - {agent_name or '*'}: '{message_content}'")      
         chat.add_assistant_message(message_content)
     else:
         async for content in agent.invoke(chat):
