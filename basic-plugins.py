@@ -29,13 +29,27 @@ PROMPT_DIR = "prompts"  # Directory where your XML templates are stored
 env = Environment(loader=FileSystemLoader(PROMPT_DIR), autoescape=True)
 
 # This sample allows for a streaming response verus a non-streaming response
-streaming = True
+streaming = False
 
 # Define the agent name and instructions
 AGENT_NAME = "Shadow"
 # Render select_file_prompt template
 create_content_prompt = env.get_template("shadow_prompt.xml")
 AGENT_INSTRUCTIONS = create_content_prompt.render()
+
+def manage_file(filename, data):
+    """
+    Creates a file if it doesn't exist or appends data to the file if it already exists.
+
+    :param filename: The name of the file to create or append to.
+    :param data: The data to write to the file.
+    """
+    try:
+        with open(filename, 'w') as file:  # Open the file in append mode
+            file.write(data + '\n')  # Append the new data
+        print(f"Data added to {filename}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 # Define the ShadowPlugin
@@ -64,7 +78,7 @@ async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory
     print(f"# {AuthorRole.USER}: '{query}'")
 
     if streaming:
-        print(f"streaming!")
+        #print(f"streaming!")
         contents = []
         agent_name = ""
         async for content in agent.invoke_stream(chat):
@@ -109,6 +123,8 @@ async def main():
         # Respond invoke the Shadow agent with the Plugins
         #print(chat)
         await invoke_agent(agent, query, chat)
+
+        manage_file('chat_history.json', chat.serialize())
 
 if __name__ == "__main__":
     asyncio.run(main())
