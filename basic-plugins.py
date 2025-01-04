@@ -1,5 +1,3 @@
-# Copyright (c) Microsoft. All rights reserved.
-
 import asyncio
 from typing import Annotated
 
@@ -14,6 +12,8 @@ from semantic_kernel.contents.utils.author_role import AuthorRole
 from semantic_kernel.functions.kernel_function_decorator import kernel_function
 from semantic_kernel.kernel import Kernel
 from jinja2 import Environment, FileSystemLoader
+
+import time
 
 ###################################################################
 # The following sample demonstrates how to create a simple,       #
@@ -78,14 +78,19 @@ async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory
     print(f"# {AuthorRole.USER}: '{query}'")
 
     if streaming:
-        #print(f"streaming!")
+        print(f"streaming!")
         contents = []
         agent_name = ""
         async for content in agent.invoke_stream(chat):
             agent_name = content.name
             contents.append(content)
         message_content = "".join([content.content for content in contents])
-        print(f"# {content.role} - {agent_name or '*'}: '{message_content}'")
+        # Simulate typing by adding characters one by one
+        #for char in message_content:
+        #    accumulated_text += char
+        #    print(accumulated_text)
+        #    time.sleep(0.02)  # Adjust typing speed as desired
+        print(f"# {content.role} - {agent_name or '*'}: '{message_content}'")      
         chat.add_assistant_message(message_content)
     else:
         async for content in agent.invoke(chat):
