@@ -4,7 +4,13 @@
       "metadata": {},
       "content_type": "message",
       "role": "user",
-      "items": []
+      "items": [
+        {
+          "metadata": {},
+          "content_type": "text",
+          "text": "Hello Shadow"
+        }
+      ]
     },
     {
       "metadata": {},
@@ -15,7 +21,7 @@
         {
           "metadata": {},
           "content_type": "text",
-          "text": "Hello! Do you have any sales-related questions or need assistance with your sales strategy today? "
+          "text": "Hello! How can I assist you with your sales pursuits today?"
         }
       ]
     },
@@ -27,7 +33,7 @@
         {
           "metadata": {},
           "content_type": "text",
-          "text": "Hello! Do you have any sales-related questions or need assistance with your sales strategy today? "
+          "text": "Hello! How can I assist you with your sales pursuits today?"
         }
       ]
     }

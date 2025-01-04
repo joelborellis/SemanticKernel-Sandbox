@@ -75,10 +75,9 @@ async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory
     """Invoke the agent with the user input."""
     chat.add_user_message(query)
 
-    print(f"# {AuthorRole.USER}: '{query}'")
+    print(f"# {AuthorRole.USER}: \n'{query}'\n")
 
     if streaming:
-        #print(f"streaming!")
         contents = []
         agent_name = ""
         async for content in agent.invoke_stream(chat):
@@ -87,11 +86,11 @@ async def invoke_agent(agent: ChatCompletionAgent, query: str, chat: ChatHistory
         message_content = "".join([content.content for content in contents])
         # Simulate typing by adding characters one by one
         if message_content:
+            print(f"# {content.role} - {agent_name or '*'}:")
             for char in message_content:
                 print(char, end="", flush=True)
                 # Adjust sleep time to control the "typing" speed
                 await asyncio.sleep(0.01)
-        #print(f"# {content.role} - {agent_name or '*'}: '{message_content}'")      
         chat.add_assistant_message(message_content)
     else:
         async for content in agent.invoke(chat):
