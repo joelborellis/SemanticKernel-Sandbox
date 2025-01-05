@@ -1,12 +1,12 @@
-# Copyright (c) Microsoft. All rights reserved.
-
-
 import semantic_kernel.connectors.ai.open_ai as sk_oai
 from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
-from semantic_kernel.core_plugins.conversation_summary_plugin import ConversationSummaryPlugin
+from shadow_insights_plugin import ShadowInsightsPlugin
 from semantic_kernel.functions.kernel_arguments import KernelArguments
 from semantic_kernel.prompt_template.prompt_template_config import PromptTemplateConfig
 from utils import retry
+
+from semantic_kernel.kernel import Kernel
+import asyncio
 
 CHAT_TRANSCRIPT = """John: Hello, how are you?
 Jane: I'm fine, thanks. How are you?
@@ -47,24 +47,24 @@ Jane: That's a good idea. Let me see if I can find one. Maybe Lorem Ipsum?
 John: Yeah, that's a good idea."""
 
 
-async def test_azure_summarize_conversation_using_plugin(kernel):
+async def test_shadow_insights_plugin(kernel):
     service_id = "text_completion"
 
     execution_settings = PromptExecutionSettings(
-        service_id=service_id, max_tokens=ConversationSummaryPlugin._max_tokens, temperature=0.1, top_p=0.5
+        service_id=service_id, max_tokens=ShadowInsightsPlugin._max_tokens, temperature=0.1, top_p=0.5
     )
     prompt_template_config = PromptTemplateConfig(
-        description="Given a section of a conversation transcript, summarize the part of the conversation.",
+        description="Given a section of a conversation transcript, summarize the part of the conversation in a pirate language",
         execution_settings={service_id: execution_settings},
     )
 
     kernel.add_service(sk_oai.OpenAIChatCompletion(service_id=service_id, ai_model_id="gpt-4o"))
 
     conversationSummaryPlugin = kernel.add_plugin(
-        ConversationSummaryPlugin(prompt_template_config), "conversationSummary"
+        ShadowInsightsPlugin(prompt_template_config), "conversationSummary"
     )
 
-    arguments = KernelArguments(input=CHAT_TRANSCRIPT)
+    arguments = KernelArguments(input=CHAT_TRANSCRIPT, query="Hello Shadow")
 
     summary = await retry(
         lambda: kernel.invoke(conversationSummaryPlugin["SummarizeConversation"], arguments), retries=5
@@ -74,4 +74,13 @@ async def test_azure_summarize_conversation_using_plugin(kernel):
     print(f"output {output}")
     assert "john" in output and "jane" in output
     assert len(output) < len(CHAT_TRANSCRIPT)
+
+async def main():
+    # Create the instance of the Kernel
+    kernel = Kernel()
+
+    await test_shadow_insights_plugin(kernel)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
