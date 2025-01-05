@@ -13,6 +13,9 @@ search_customer_client = SearchCustomer()
 class ShadowInsightsPlugin:
     """Plugin class that accepts a PromptTemplateConfig for advanced configuration."""
 
+    # The max tokens to process in a single semantic function call.
+    _max_tokens = 1024
+
     def __init__(self, prompt_template_config: PromptTemplateConfig):
         """
         :param prompt_template_config: A PromptTemplateConfig object used for advanced template configuration.

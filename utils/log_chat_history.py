@@ -28,7 +28,7 @@ def log_chat_history(chat, parser_function=None):
                 if parser_function and callable(parser_function):
                         try:
                             jsonl_row = parser_function(json_data)
-                            print(jsonl_row)
+                            #print(jsonl_row)
                             logger.info(f"{jsonl_row}")
                         except Exception as e:
                             logger.error(f"Error in parsing function: {e}")

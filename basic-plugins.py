@@ -31,10 +31,9 @@ streaming = True
 chat = ChatHistory()
 
 # Define the agent name and instructions
-AGENT_NAME = "Shadow"
-create_content_prompt = env.get_template("shadow_prompt.xml")
-AGENT_INSTRUCTIONS = create_content_prompt.render()
-
+AGENT_NAME = "ShadowAgent"
+agent_prompt = env.get_template("agent_prompt.xml")
+AGENT_INSTRUCTIONS = agent_prompt.render()
 
 def manage_file(filename, data):
     """
@@ -50,12 +49,13 @@ def manage_file(filename, data):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-@log_chat_history(chat, parser_function=extract_history)
+#@log_chat_history(chat, parser_function=extract_history)
 async def invoke_agent_by_line(
     agent: ChatCompletionAgent, query: str, chat: ChatHistory, streaming: bool) -> AsyncGenerator[str, None]:
     
     """Invoke the agent with the user input."""
     chat.add_user_message(query)
+    print(chat.serialize())
     print(f"# {AuthorRole.USER}: \n'{query}'\n")
     if streaming:
         async for content in agent.invoke_stream(chat):
@@ -65,6 +65,7 @@ async def invoke_agent_by_line(
             for line in lines:
                 # Yield each line individually
                 yield line
+        chat.add_message(content)
     else:
         # Non-streaming approach
         async for content in agent.invoke(chat):
@@ -77,6 +78,7 @@ async def main():
     # 1) Create the instance of the Kernel
     kernel = Kernel()
 
+    # Setup the Agent
     service_id = "shadow_agent"
     kernel.add_service(
         OpenAIChatCompletion(ai_model_id="gpt-4o", service_id=service_id)
@@ -101,7 +103,7 @@ async def main():
     )
 
     # 5) Register plugin with the Kernel
-    kernel.add_plugin(shadow_plugin, plugin_name="shadow")
+    kernel.add_plugin(shadow_plugin, plugin_name="shadowRetrievalPlugin")
 
     # 6) Create the agent
     agent = ChatCompletionAgent(
@@ -128,6 +130,7 @@ async def main():
             async for chunk in invoke_agent_by_line(agent, query, chat, streaming=False):
                 print(chunk, end="", flush=True)
 
+        #print(chat.serialize())
 
 if __name__ == "__main__":
     asyncio.run(main())
