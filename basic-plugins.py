@@ -129,7 +129,7 @@ async def main():
         #print(chat)
         await invoke_agent(agent, query, chat)
 
-        manage_file('chat_history.json', chat.serialize())
+        #manage_file('chat_history.json', chat.serialize())
 
 if __name__ == "__main__":
     asyncio.run(main())
