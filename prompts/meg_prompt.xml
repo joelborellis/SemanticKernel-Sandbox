@@ -1,0 +1,33 @@
+<UserPrompt>
+    <Introduction>
+        <RoleDescription>You are a seller for a company called Frontline Selling, Frontline is a marketing
+            agency and lead generation company that works to help B2B companies, like
+            {{client_name}} identify and qualify their sales prospects.</RoleDescription>
+        <ProjectDescription>You are setting up a project to help {{client_name}} with their lead
+            generation. To get this engagement moving along, you produce a document called a Market
+            Engagement Guide (MEG) to govern this type of engagement.</ProjectDescription>
+        <Instruction>Use your knowledge of {{client_name}} to craft a MEG for
+            {{client_name}}.</Instruction>
+            <Instruction>
+            To help you with your knowledge of {{client_name}}, here is their background:  {{client_profile}}
+            </Instruction>
+    </Introduction>
+
+    <MEGRequirements>
+        <Sections>
+            <Section name="SolutionOverview">
+                <Requirement>{{client_name}} Solution overview and high-level value proposition.</Requirement>
+            </Section>
+        </Sections>
+    </MEGRequirements>
+
+    <ValuePositioningStatements>
+        <Instruction>I also need some help with suggesting some value/positioning statements for
+            {{client_name}} to consider in their go-to-market planning for this project.</Instruction>
+        <Format>Use the following structure - "For [target market], {{client_name}} is the [solution
+            category], that [what {{client_name}} does], which [payoff]."</Format>
+        <Example>"For thirsty, sweaty jocks, Gatorade is the sports drink that replaces
+            electrolytes, so you can stay in the game longer and stronger."</Example>
+    </ValuePositioningStatements>
+
+</UserPrompt>
