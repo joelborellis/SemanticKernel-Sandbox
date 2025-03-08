@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ShadowInsightsPlugin:
+class ConversationSummaryPlugin:
     """Semantic plugin that enables conversations summarization."""
 
     # The max tokens to process in a single semantic function call.
@@ -27,7 +27,7 @@ class ShadowInsightsPlugin:
         " SUMMARIZE',            identifying main points of discussion and any"
         " conclusions that were reached.\nDo not incorporate other general"
         " knowledge.\nSummary is in plain text, in complete sentences, with no markup"
-        " or tags.  Summary sounds like a pirate\n\nBEGIN SUMMARY:\n"
+        " or tags.\n\nBEGIN SUMMARY:\n"
     )
 
     def __init__(
@@ -51,10 +51,10 @@ class ShadowInsightsPlugin:
             )
 
         self.return_key = return_key
-        prompt_template_config.template = ShadowInsightsPlugin._summarize_conversation_prompt_template
+        prompt_template_config.template = ConversationSummaryPlugin._summarize_conversation_prompt_template
         prompt_template_config.template_format = "semantic-kernel"
         self._summarizeConversationFunction = KernelFunctionFromPrompt(
-            plugin_name=ShadowInsightsPlugin.__name__,
+            plugin_name=ConversationSummaryPlugin.__name__,
             function_name="SummarizeConversation",
             prompt_template_config=prompt_template_config,
         )
@@ -66,7 +66,6 @@ class ShadowInsightsPlugin:
     async def summarize_conversation(
         self,
         input: Annotated[str, "A long conversation transcript."],
-        query: Annotated[str, "A sales query from the user."],
         kernel: Annotated["Kernel", "The kernel instance."],
         arguments: Annotated["KernelArguments", "Arguments used by the kernel."],
     ) -> Annotated[
@@ -85,10 +84,8 @@ class ShadowInsightsPlugin:
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import aggregate_chunked_results
 
-        print(query)
-
-        lines = text_chunker._split_text_lines(input, ShadowInsightsPlugin._max_tokens, True)
-        paragraphs = text_chunker._split_text_paragraph(lines, ShadowInsightsPlugin._max_tokens)
+        lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
+        paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)
 
         arguments[self.return_key] = await aggregate_chunked_results(
             self._summarizeConversationFunction, paragraphs, kernel, arguments
