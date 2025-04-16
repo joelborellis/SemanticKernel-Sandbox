@@ -49,7 +49,6 @@ class ConversationSummaryPlugin:
                 "Please make sure to remove and to add the created plugin to the kernel, by using:"
                 "kernel.add_plugin(conversation_plugin, 'summarizer')"
             )
-
         self.return_key = return_key
         prompt_template_config.template = ConversationSummaryPlugin._summarize_conversation_prompt_template
         prompt_template_config.template_format = "semantic-kernel"
@@ -83,6 +82,8 @@ class ConversationSummaryPlugin:
         """
         from semantic_kernel.text import text_chunker
         from semantic_kernel.text.function_extension import aggregate_chunked_results
+        
+        print(f"summarize_conversation Invoked!")
 
         lines = text_chunker._split_text_lines(input, ConversationSummaryPlugin._max_tokens, True)
         paragraphs = text_chunker._split_text_paragraph(lines, ConversationSummaryPlugin._max_tokens)
